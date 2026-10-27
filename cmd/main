@@ -1,0 +1,51 @@
+#!/bin/bash
+set -eu
+
+LOG_FILE="${TRIM_PKGVAR}/magpie-updater.log"
+PID_FILE="${TRIM_PKGVAR}/magpie-updater.pid"
+SOCKET_FILE="${TRIM_APPDEST}/magpie-updater.sock"
+SERVER="${TRIM_APPDEST}/server.py"
+
+log_msg() {
+    printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" >> "$LOG_FILE"
+}
+
+is_running() {
+    [ -r "$PID_FILE" ] && kill -0 "$(tr -d '[:space:]' < "$PID_FILE")" 2>/dev/null
+}
+
+start() {
+    if is_running; then
+        exit 0
+    fi
+    rm -f "$PID_FILE" "$SOCKET_FILE"
+    log_msg "启动受限 Magpie 更新服务。"
+    /usr/bin/python3 "$SERVER" --socket "$SOCKET_FILE" --state-dir "$TRIM_PKGVAR" >> "$LOG_FILE" 2>&1 &
+    printf '%s' "$!" > "$PID_FILE"
+    sleep 1
+    if ! is_running || [ ! -S "$SOCKET_FILE" ]; then
+        log_msg "服务启动失败。"
+        rm -f "$PID_FILE" "$SOCKET_FILE"
+        exit 1
+    fi
+}
+
+stop() {
+    if is_running; then
+        pid="$(tr -d '[:space:]' < "$PID_FILE")"
+        kill -TERM "$pid" 2>/dev/null || true
+        for _ in $(seq 1 10); do
+            kill -0 "$pid" 2>/dev/null || break
+            sleep 1
+        done
+        kill -KILL "$pid" 2>/dev/null || true
+    fi
+    rm -f "$PID_FILE" "$SOCKET_FILE"
+}
+
+case "${1:-}" in
+  start) start ;;
+  stop) stop ;;
+  status) is_running && exit 0 || exit 3 ;;
+  *) exit 1 ;;
+esac

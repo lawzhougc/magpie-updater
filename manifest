@@ -1,0 +1,12 @@
+appname=magpie-updater
+version=1.0.0
+display_name=Magpie 更新器
+desc=检测 Magpie 官方版本，并在管理员确认后安全升级 Docker 容器。
+platform=all
+source=thirdparty
+maintainer=本机管理员
+distributor=本机管理员
+os_min_version=1.2.0401
+desktop_uidir=ui
+desktop_applaunchname=magpie-updater.main
+micro_app=true

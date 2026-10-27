@@ -1,0 +1,14 @@
+{
+  ".url": {
+    "magpie-updater.main": {
+      "title": "Magpie 更新器",
+      "icon": "images/icon_{0}.png",
+      "type": "iframe",
+      "protocol": "",
+      "gatewayPrefix": "/app/magpie-updater",
+      "gatewaySocket": "magpie-updater.sock",
+      "url": "/app/magpie-updater",
+      "allUsers": false
+    }
+  }
+}
